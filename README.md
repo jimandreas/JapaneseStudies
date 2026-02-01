@@ -26,3 +26,8 @@ Open `index.html` in a modern browser (Chrome or Edge recommended for best Web S
 
 - A browser that supports the [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)
 - A Japanese voice pack installed on the OS for accurate pronunciation (most modern systems include one by default)
+
+## Credits
+
+- **Google Gemini** — initial program requirements and vocabulary data
+- **Claude Code (Anthropic)** — application implementation
