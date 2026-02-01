@@ -38,4 +38,60 @@ Upload the resulting index.html file.
 Go to Settings > Pages.
 Under "Source", select main (or master) branch and save. GitHub will give you a live URL to share or use on your phone.
 Running Locally:
-Simply save the code as index.html on your desktop and double-click it. It will open in Edge or Chrome and work immediately.
+Simply save the code as index.html on your desktop and double-click it. It will open in
+Edge or Chrome and work immediately.
+
+--------------------------
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Plan: Japanese Vocabulary Learning Tool
+
+ Summary
+
+ Create a single index.html file with embedded CSS/JS that provides two tabbed study modes (Restaurant Menu & Japanese
+ Garden) with audio pronunciation via Web Speech API.
+
+ File to Create
+
+ - C:\a\j\html\JapaneseStudies\index.html
+
+ Implementation Details
+
+ HTML Structure
+
+ - Tab bar at top: "Restaurant Menu" | "Japanese Garden" toggle buttons
+ - 2-column responsive grid: Japanese (with play button) | English
+ - Reading (hiragana/romaji) shown below the Japanese text in smaller font
+
+ CSS (embedded in <style>)
+
+ - Google Fonts: Noto Sans JP for Japanese text legibility
+ - Clean minimalist design with neutral background
+ - 2-column grid using CSS Grid
+ - Row hover highlight for readability
+ - Responsive: single-column on mobile (@media max-width: 600px)
+ - Active tab styling
+
+ JavaScript (embedded in <script>)
+
+ - Embed the data from menuItems.json and gardenFeatures.json as const arrays directly in the script
+ - Tab switching: show/hide the appropriate word list
+ - renderList(data, containerId) — generates the grid rows with play buttons
+ - Audio: window.speechSynthesis with lang: 'ja-JP', speaking the japanese field value
+ - Voice fallback: attempt to find a Japanese voice; if unavailable, alert the user and try default voice
+
+ Data
+
+ - 51 restaurant menu items (from menuItems.json)
+ - 41 garden features (from gardenFeatures.json)
+ - Format: { japanese, reading, english }
+
+ Verification
+
+ 1. Open index.html in a browser (double-click or serve locally)
+ 2. Confirm both tabs switch content correctly
+ 3. Click play buttons — verify Japanese pronunciation plays
+ 4. Resize browser window to verify responsive layout
+ 5. Test on Edge/Chrome for Web Speech API compatibility
+

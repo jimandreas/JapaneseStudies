@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japanese Vocabulary Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f0; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
+h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 12px; border: none; background: #ddd; font-size: 1rem; font-family: inherit; cursor: pointer; border-radius: 6px 6px 0 0; transition: background 0.2s; }
+.tab-btn.active { background: #4a7c59; color: #fff; }
+.list { display: none; }
+.list.active { display: block; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e0e0d8; transition: background 0.15s; }
+.row:hover { background: #eae8df; }
+.jp { font-size: 1.3rem; font-weight: 700; }
+.reading { font-size: 0.85rem; color: #888; }
+.en { font-size: 1rem; }
+.play-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; vertical-align: middle; margin-left: 6px; }
+@media (max-width: 600px) {
+  .row { grid-template-columns: 1fr; gap: 4px; }
+}
+</style>
+</head>
+<body>
+<h1>Japanese Vocabulary Study</h1>
+<div class="tabs">
+  <button class="tab-btn active" data-tab="menu">Restaurant Menu</button>
+  <button class="tab-btn" data-tab="garden">Japanese Garden</button>
+</div>
+<div id="menu" class="list active"></div>
+<div id="garden" class="list"></div>
+
+<script>
+const menuData = [
+  { japanese: "寿司", reading: "Sushi", english: "Sushi" },
+  { japanese: "刺身", reading: "Sashimi", english: "Sashimi (Sliced raw fish)" },
+  { japanese: "天ぷら", reading: "Tempura", english: "Tempura (Battered and fried)" },
+  { japanese: "ラーメン", reading: "Raamen", english: "Ramen" },
+  { japanese: "うどん", reading: "Udon", english: "Udon (Thick wheat noodles)" },
+  { japanese: "蕎麦", reading: "Soba", english: "Soba (Buckwheat noodles)" },
+  { japanese: "味噌汁", reading: "Misoshiru", english: "Miso Soup" },
+  { japanese: "枝豆", reading: "Edamame", english: "Edamame (Soybeans)" },
+  { japanese: "餃子", reading: "Gyouza", english: "Gyoza (Dumplings)" },
+  { japanese: "焼き鳥", reading: "Yakitori", english: "Yakitori (Grilled chicken skewers)" },
+  { japanese: "お好み焼き", reading: "Okonomiyaki", english: "Okonomiyaki (Savory pancake)" },
+  { japanese: "たこ焼き", reading: "Takoyaki", english: "Takoyaki (Octopus balls)" },
+  { japanese: "カレーライス", reading: "Kareeraisu", english: "Curry Rice" },
+  { japanese: "おにぎり", reading: "Onigiri", english: "Rice Ball" },
+  { japanese: "牛丼", reading: "Gyudon", english: "Beef Bowl" },
+  { japanese: "親子丼", reading: "Oyakodon", english: "Chicken and Egg Bowl" },
+  { japanese: "カツ丼", reading: "Katsudon", english: "Pork Cutlet Bowl" },
+  { japanese: "唐揚げ", reading: "Karaage", english: "Fried Chicken" },
+  { japanese: "とんかつ", reading: "Tonkatsu", english: "Pork Cutlet" },
+  { japanese: "すき焼き", reading: "Sukiyaki", english: "Sukiyaki (Hot pot)" },
+  { japanese: "しゃぶしゃぶ", reading: "Shabushabu", english: "Shabu-shabu (Hot pot)" },
+  { japanese: "焼きそば", reading: "Yakisoba", english: "Fried Noodles" },
+  { japanese: "茶碗蒸し", reading: "Chawanmushi", english: "Savory Egg Custard" },
+  { japanese: "漬物", reading: "Tsukemono", english: "Pickles" },
+  { japanese: "納豆", reading: "Nattou", english: "Natto (Fermented soybeans)" },
+  { japanese: "鰻", reading: "Unagi", english: "Eel" },
+  { japanese: "マグロ", reading: "Maguro", english: "Tuna" },
+  { japanese: "サーモン", reading: "Saamon", english: "Salmon" },
+  { japanese: "海老", reading: "Ebi", english: "Shrimp" },
+  { japanese: "イカ", reading: "Ika", english: "Squid" },
+  { japanese: "タコ", reading: "Tako", english: "Octopus" },
+  { japanese: "玉子", reading: "Tamago", english: "Egg (Omelet)" },
+  { japanese: "生ビール", reading: "Namabiiru", english: "Draft Beer" },
+  { japanese: "日本酒", reading: "Nihonshu", english: "Sake (Rice wine)" },
+  { japanese: "焼酎", reading: "Shouchuu", english: "Shochu (Distilled spirit)" },
+  { japanese: "梅酒", reading: "Umeshu", english: "Plum Wine" },
+  { japanese: "緑茶", reading: "Ryokucha", english: "Green Tea" },
+  { japanese: "抹茶", reading: "Matcha", english: "Matcha (Powdered green tea)" },
+  { japanese: "水", reading: "Mizu", english: "Water" },
+  { japanese: "ご飯", reading: "Gohan", english: "Rice (Cooked)" },
+  { japanese: "定食", reading: "Teishoku", english: "Set Meal" },
+  { japanese: "弁当", reading: "Bentou", english: "Bento Box" },
+  { japanese: "懐石料理", reading: "Kaiseki Ryouri", english: "Kaiseki (Traditional multi-course)" },
+  { japanese: "居酒屋", reading: "Izakaya", english: "Izakaya (Japanese pub)" },
+  { japanese: "お任せ", reading: "Omakase", english: "Omakase (Chef's choice)" },
+  { japanese: "醤油", reading: "Shouyu", english: "Soy Sauce" },
+  { japanese: "わさび", reading: "Wasabi", english: "Wasabi" },
+  { japanese: "ガリ", reading: "Gari", english: "Pickled Ginger" },
+  { japanese: "割り箸", reading: "Waribashi", english: "Disposable Chopsticks" },
+  { japanese: "お会計", reading: "Okaikei", english: "Bill / Check" }
+];
+
+const gardenData = [
+  { japanese: "日本庭園", reading: "Nihon Teien", english: "Japanese Garden" },
+  { japanese: "灯籠", reading: "Tourou", english: "Stone Lantern" },
+  { japanese: "石灯籠", reading: "Ishidourou", english: "Stone Lantern (Specific)" },
+  { japanese: "枯山水", reading: "Karesansui", english: "Dry Landscape (Rock Garden)" },
+  { japanese: "池", reading: "Ike", english: "Pond" },
+  { japanese: "鯉", reading: "Koi", english: "Koi Fish" },
+  { japanese: "橋", reading: "Hashi", english: "Bridge" },
+  { japanese: "太鼓橋", reading: "Taikobashi", english: "Drum Bridge (Arched)" },
+  { japanese: "手水鉢", reading: "Chouzu bachi", english: "Water Basin" },
+  { japanese: "蹲踞", reading: "Tsukubai", english: "Low Water Basin (for tea ceremony)" },
+  { japanese: "鹿威し", reading: "Shishiodoshi", english: "Deer Scarer (Bamboo water rocker)" },
+  { japanese: "水琴窟", reading: "Suikinkutsu", english: "Buried Earthen Jar (Sound feature)" },
+  { japanese: "飛び石", reading: "Tobiishi", english: "Stepping Stones" },
+  { japanese: "延段", reading: "Nobedan", english: "Paved Stone Path" },
+  { japanese: "石", reading: "Ishi", english: "Stone / Rock" },
+  { japanese: "岩", reading: "Iwa", english: "Large Rock / Boulder" },
+  { japanese: "砂", reading: "Suna", english: "Sand" },
+  { japanese: "砂利", reading: "Jari", english: "Gravel" },
+  { japanese: "苔", reading: "Koke", english: "Moss" },
+  { japanese: "松", reading: "Matsu", english: "Pine Tree" },
+  { japanese: "桜", reading: "Sakura", english: "Cherry Blossom" },
+  { japanese: "紅葉", reading: "Momiji", english: "Japanese Maple" },
+  { japanese: "竹", reading: "Take", english: "Bamboo" },
+  { japanese: "垣根", reading: "Kakine", english: "Fence / Hedge" },
+  { japanese: "竹垣", reading: "Takegaki", english: "Bamboo Fence" },
+  { japanese: "借景", reading: "Shakkei", english: "Borrowed Scenery" },
+  { japanese: "東屋", reading: "Azumaya", english: "Gazebo / Pavilion" },
+  { japanese: "茶室", reading: "Chashitsu", english: "Tea House" },
+  { japanese: "島", reading: "Shima", english: "Island" },
+  { japanese: "中島", reading: "Nakajima", english: "Central Island" },
+  { japanese: "滝", reading: "Taki", english: "Waterfall" },
+  { japanese: "遣水", reading: "Yarimizu", english: "Stream" },
+  { japanese: "築山", reading: "Tsukiyama", english: "Artificial Hill" },
+  { japanese: "平庭", reading: "Hiraniwa", english: "Flat Garden" },
+  { japanese: "露地", reading: "Roji", english: "Tea Garden Path" },
+  { japanese: "雪見灯籠", reading: "Yukimidourou", english: "Snow-viewing Lantern" },
+  { japanese: "雪吊り", reading: "Yukitsuri", english: "Rope supports for trees (Winter)" },
+  { japanese: "盆栽", reading: "Bonsai", english: "Bonsai" },
+  { japanese: "石組", reading: "Ishigumi", english: "Rock Arrangement" },
+  { japanese: "三尊石", reading: "Sanzonseki", english: "Three-Buddha Stone Arrangement" }
+];
+
+function speak(text) {
+  if (!window.speechSynthesis) { alert("Speech synthesis not supported in this browser."); return; }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "ja-JP";
+  const voices = window.speechSynthesis.getVoices();
+  const jaVoice = voices.find(v => v.lang.startsWith("ja"));
+  if (jaVoice) utter.voice = jaVoice;
+  window.speechSynthesis.speak(utter);
+}
+
+function renderList(data, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = data.map(item => `
+    <div class="row">
+      <div>
+        <span class="jp">${item.japanese}</span>
+        <button class="play-btn" onclick="speak('${item.japanese}')" title="Play pronunciation">&#9654;</button>
+        <div class="reading">${item.reading}</div>
+      </div>
+      <div class="en">${item.english}</div>
+    </div>
+  `).join("");
+}
+
+// Init
+renderList(menuData, "menu");
+renderList(gardenData, "garden");
+
+// Tabs
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".list").forEach(l => l.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+// Load voices (some browsers load async)
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+  window.speechSynthesis.getVoices();
+}
+</script>
+</body>
+</html>
