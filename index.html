@@ -20,6 +20,26 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 .reading { font-size: 0.85rem; color: #888; }
 .en { font-size: 1rem; }
 .play-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; vertical-align: middle; margin-left: 6px; color: #2563eb; }
+.dataset-selector { text-align: center; margin: 30px 0; }
+.dataset-selector button { padding: 10px 20px; margin: 6px; border: 2px solid #4a7c59; background: #fff; color: #4a7c59; font-size: 1rem; font-family: inherit; cursor: pointer; border-radius: 6px; transition: background 0.2s, color 0.2s; }
+.dataset-selector button:hover { background: #4a7c59; color: #fff; }
+.flashcard-area, .quiz-area { text-align: center; }
+.card { border: 2px solid #ccc; border-radius: 12px; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px auto; max-width: 500px; cursor: pointer; padding: 30px; transition: box-shadow 0.2s; background: #fff; }
+.card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.card .jp { font-size: 3rem; }
+.card .reading { font-size: 1rem; color: #888; margin-top: 6px; }
+.card .en { font-size: 1.3rem; margin-top: 12px; color: #4a7c59; font-weight: 700; }
+.progress { font-size: 0.95rem; color: #666; margin: 10px 0; }
+.grade-btns button, .nav-btn { padding: 10px 24px; margin: 6px; border: none; border-radius: 6px; font-size: 1rem; font-family: inherit; cursor: pointer; color: #fff; }
+.grade-btns .knew { background: #4a7c59; }
+.grade-btns .didnt { background: #c0392b; }
+.nav-btn { background: #4a7c59; }
+.quiz-option { display: block; width: 100%; max-width: 500px; margin: 8px auto; padding: 14px; border: 2px solid #ccc; border-radius: 8px; font-size: 1rem; font-family: inherit; cursor: pointer; background: #fff; transition: border-color 0.2s; }
+.quiz-option:hover:not(:disabled) { border-color: #4a7c59; }
+.quiz-option.correct { background: #27ae60; color: #fff; border-color: #27ae60; }
+.quiz-option.incorrect { background: #c0392b; color: #fff; border-color: #c0392b; }
+.summary { max-width: 500px; margin: 30px auto; padding: 30px; background: #fff; border-radius: 12px; border: 2px solid #4a7c59; }
+.summary h2 { margin-bottom: 12px; color: #4a7c59; }
 @media (max-width: 600px) {
   .row { grid-template-columns: 1fr; gap: 4px; }
 }
@@ -30,9 +50,13 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 <div class="tabs">
   <button class="tab-btn active" data-tab="menu">Restaurant Menu</button>
   <button class="tab-btn" data-tab="garden">Japanese Garden</button>
+  <button class="tab-btn" data-tab="flashcard">Flashcard</button>
+  <button class="tab-btn" data-tab="quiz">Quiz</button>
 </div>
 <div id="menu" class="list active"></div>
 <div id="garden" class="list"></div>
+<div id="flashcard" class="list"></div>
+<div id="quiz" class="list"></div>
 
 <script>
 const menuData = [
@@ -156,9 +180,112 @@ function renderList(data, containerId) {
   `).join("");
 }
 
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function getDataset(name) {
+  if (name === "menu") return [...menuData];
+  if (name === "garden") return [...gardenData];
+  return [...menuData, ...gardenData];
+}
+
+const _startCallbacks = {};
+function datasetSelector(containerId, onSelect) {
+  _startCallbacks[containerId] = onSelect;
+  const el = document.getElementById(containerId);
+  el.innerHTML = `<div class="dataset-selector"><h2>Choose a dataset</h2>
+    <button onclick="_startCallbacks['${containerId}']('menu')">Menu</button>
+    <button onclick="_startCallbacks['${containerId}']('garden')">Garden</button>
+    <button onclick="_startCallbacks['${containerId}']('both')">Both</button></div>`;
+}
+
+// ---- Flashcard ----
+function initFlashcard(dsName) {
+  const cards = shuffle(getDataset(dsName));
+  let idx = 0, known = 0, revealed = false;
+  const el = document.getElementById("flashcard");
+
+  function render() {
+    if (idx >= cards.length) {
+      el.innerHTML = `<div class="summary"><h2>Flashcard Complete!</h2>
+        <p>You knew <strong>${known}</strong> of <strong>${cards.length}</strong> cards.</p>
+        <button class="nav-btn" onclick="datasetSelector('flashcard', initFlashcard)">Restart</button></div>`;
+      return;
+    }
+    const c = cards[idx];
+    el.innerHTML = `<div class="flashcard-area">
+      <div class="progress">Card ${idx + 1} of ${cards.length}</div>
+      <div class="card" onclick="window._revealCard()">
+        <div class="jp">${c.japanese}</div>
+        <button class="play-btn" onclick="event.stopPropagation();speak('${c.japanese}')" title="Play pronunciation">&#9654;</button>
+        ${revealed ? `<div class="reading">${c.reading}</div><div class="en">${c.english}</div>` : `<div style="margin-top:12px;color:#999">Tap card to reveal</div>`}
+      </div>
+      ${revealed ? `<div class="grade-btns">
+        <button class="knew" onclick="window._gradeCard(true)">I knew it</button>
+        <button class="didnt" onclick="window._gradeCard(false)">I didn't know</button>
+      </div>` : `<button class="nav-btn" onclick="window._revealCard()">Reveal</button>`}
+    </div>`;
+  }
+
+  window._revealCard = () => { if (!revealed) { revealed = true; render(); } };
+  window._gradeCard = (k) => { if (k) known++; idx++; revealed = false; render(); };
+  render();
+}
+
+// ---- Quiz ----
+function initQuiz(dsName) {
+  const allData = getDataset(dsName);
+  const questions = shuffle(allData);
+  let idx = 0, score = 0, answered = false;
+  const el = document.getElementById("quiz");
+
+  function render() {
+    if (idx >= questions.length) {
+      el.innerHTML = `<div class="summary"><h2>Quiz Complete!</h2>
+        <p>Score: <strong>${score}</strong> / <strong>${questions.length}</strong></p>
+        <button class="nav-btn" onclick="datasetSelector('quiz', initQuiz)">Restart</button></div>`;
+      return;
+    }
+    const q = questions[idx];
+    const distractors = shuffle(allData.filter(d => d.english !== q.english)).slice(0, 3);
+    const options = shuffle([q, ...distractors]);
+    answered = false;
+
+    el.innerHTML = `<div class="quiz-area">
+      <div class="progress">Question ${idx + 1} of ${questions.length} &mdash; Score: ${score}</div>
+      <div class="card" style="cursor:default">
+        <div class="jp">${q.japanese}</div>
+        <button class="play-btn" onclick="speak('${q.japanese}')" title="Play pronunciation">&#9654;</button>
+      </div>
+      ${options.map((o, i) => `<button class="quiz-option" onclick="window._answer(${i},'${o.english.replace(/'/g, "\\'")}')">${o.english}</button>`).join("")}
+      <div id="quiz-next" style="display:none"><button class="nav-btn" onclick="window._nextQ()">Next</button></div>
+    </div>`;
+
+    window._answer = (i, chosen) => {
+      if (answered) return;
+      answered = true;
+      const btns = el.querySelectorAll(".quiz-option");
+      btns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.english) b.classList.add("correct");
+      });
+      if (chosen === q.english) { score++; }
+      else { btns[i].classList.add("incorrect"); }
+      document.getElementById("quiz-next").style.display = "block";
+    };
+    window._nextQ = () => { idx++; render(); };
+  }
+  render();
+}
+
 // Init
 renderList(menuData, "menu");
 renderList(gardenData, "garden");
+datasetSelector("flashcard", initFlashcard);
+datasetSelector("quiz", initQuiz);
 
 // Tabs
 document.querySelectorAll(".tab-btn").forEach(btn => {
