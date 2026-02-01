@@ -15,7 +15,7 @@ Open `index.html` in a modern browser (Chrome or Edge recommended for best Web S
 
 ### View Online
 
-[Launch the app in your browser](https://htmlpreview.github.io/?https://github.com/jimandreas/JapaneseStudies/blob/master/index.html)
+[Launch the app in your browser](https://www.jimandreas.com/JapaneseStudies/)
 
 ## Data Sources
 
