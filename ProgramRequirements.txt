@@ -95,3 +95,53 @@ Edge or Chrome and work immediately.
  4. Resize browser window to verify responsive layout
  5. Test on Edge/Chrome for Web Speech API compatibility
 
+UPDATE : 
+
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Plan: Add Flashcard and Multiple Choice Quiz Modes
+
+ Summary
+
+ Add two new tabs — Flashcard and Quiz — to index.html. Both modes let the user pick a dataset (Menu / Garden / Both)
+ before starting.
+
+ File to Modify
+
+ - C:\a\j\html\JapaneseStudies\index.html
+
+ Tab Bar
+
+ 4 tabs: Restaurant Menu | Japanese Garden | Flashcard | Quiz
+
+ Flashcard Mode
+
+ - Dataset selector (Menu / Garden / Both)
+ - One card at a time: large Japanese text centered with play button
+ - Click card or "Reveal" button to flip — shows English + reading
+ - "I knew it" / "I didn't know" self-grade buttons advance to next card
+ - Cards shuffled randomly; progress counter ("Card 5 of 51")
+ - Score summary at end with Restart button
+
+ Multiple Choice Quiz
+
+ - Dataset selector (Menu / Garden / Both)
+ - Shows Japanese text with 4 English answer buttons (1 correct + 3 random distractors)
+ - Highlights correct (green) / incorrect (red) after selection
+ - "Next" button to advance; progress counter and running score
+ - Summary at end with final score and Restart button
+
+ CSS Additions
+
+ - Card container styling (centered, bordered, min-height, clickable)
+ - Answer button styles with correct/incorrect states
+ - Dataset selector and navigation button styles
+
+ Verification
+
+ 1. Open index.html, click all 4 tabs
+ 2. Flashcard: flip cards, self-grade, verify score summary
+ 3. Quiz: pick answers, verify feedback colors, verify final score
+ 4. Audio play buttons work in flashcard mode
+ 5. Responsive layout on narrow viewport
+
