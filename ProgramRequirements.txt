@@ -1,0 +1,41 @@
+Role: Act as a Senior Front-End Developer.
+Goal: Create a comprehensive, single-file HTML/CSS/JS learning tool for studying
+Japanese vocabulary. The tool will be hosted on GitHub Pages or run locally on a Windows PC.
+Content Requirements:
+The application must feature two distinct study modes (switchable via tabs or a toggle):
+Restaurant Menu: The top 50 most common Japanese restaurant menu items
+(e.g., Sushi, Ramen, Tempura, Miso Soup, Edamame, etc.).
+Japanese Garden: Common Japanese garden features
+(e.g., Toro (lantern), Koi, Hashi (bridge), Shishi-odoshi (deer scarer),
+Karesansui (dry landscape), etc.).
+Functional Requirements:
+Layout:
+Use a clean, responsive 2-column grid layout.
+Left Column: Japanese Kanji/Kana.
+Right Column: English translation.
+Audio Button: A play button next to the Japanese text that triggers the pronunciation.
+Audio Engine:
+Do not use external audio files. Use the browser's native window.speechSynthesis (Web Speech API) with the language set to Japanese ('ja-JP').
+Include a fallback: If the specific Japanese voice isn't available, alert the user or try a default voice.
+Data Structure:
+Store the vocabulary data in constant JSON arrays within the JavaScript section so I can easily edit or add words later.
+Format: { japanese: "...", reading: "...", english: "..." } (Include "reading" for Hiragana pronunciation if the main text is Kanji).
+Styling:
+Modern, minimalist aesthetic suitable for studying.
+Use a legible font for Japanese characters (e.g., 'Noto Sans JP' or system defaults).
+Highlight the row on hover to make reading easier.
+Technical Constraints:
+Single File: All CSS and JavaScript must be embedded within a single index.html file for ease of portability.
+No Frameworks: Use Vanilla JS and standard CSS (no React, Vue, or Bootstrap) to keep the file lightweight and editable.
+Responsiveness: Must look good on both desktop and mobile screens.
+Output:
+Please provide the complete, functional code for index.html.
+________________________________________
+Implementation Tips
+Running on GitHub:
+Create a new repository on GitHub.
+Upload the resulting index.html file.
+Go to Settings > Pages.
+Under "Source", select main (or master) branch and save. GitHub will give you a live URL to share or use on your phone.
+Running Locally:
+Simply save the code as index.html on your desktop and double-click it. It will open in Edge or Chrome and work immediately.
