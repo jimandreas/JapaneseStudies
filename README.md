@@ -1,11 +1,14 @@
 # Japanese Vocabulary Study Tool
 
-A single-page web application for learning Japanese vocabulary across two categories: **Restaurant Menu** items and **Japanese Garden** features.
+A single-page web application for learning Japanese vocabulary across three categories: **Restaurant Menu** items, **Japanese Garden** features, and **Tourist Phrases**.
 
 ## Features
 
-- **Two study modes** — tabbed interface to switch between 51 restaurant/food terms and 41 garden vocabulary words
-- **Audio pronunciation** — click the play button next to any word to hear it spoken in Japanese via the Web Speech API
+- **Three vocabulary lists** — tabbed interface with 51 restaurant/food terms, 41 garden vocabulary words, and 25 tourist phrases
+- **Flashcard mode** — study any dataset with reveal-and-grade flashcards, with score tracking
+- **Multiple choice quiz** — test your knowledge with randomized four-option quizzes
+- **Audio pronunciation** — click the play button next to any word to hear it spoken in Japanese via the Web Speech API, with adjustable speech speed
+- **Character hover tooltips** — hover over any Japanese character to see its type (Kanji/Hiragana/Katakana), romaji for kana, or meaning and reading for kanji
 - **Kanji with readings** — each entry shows the Japanese text (kanji/katakana) alongside its romaji reading and English translation
 - **Responsive layout** — two-column grid on desktop, single column on mobile
 
