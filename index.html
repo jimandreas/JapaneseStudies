@@ -45,6 +45,12 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 @media (max-width: 600px) {
   .row { grid-template-columns: 1fr; gap: 4px; }
 }
+.jp-char { cursor: pointer; position: relative; }
+.jp-char:hover { text-decoration: underline; text-decoration-color: #4a7c59; text-underline-offset: 4px; }
+#charTooltip { position: absolute; z-index: 9999; background: #faf8f0; border: 2px solid #4a7c59; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; pointer-events: none; opacity: 0; transition: opacity 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); max-width: 240px; line-height: 1.5; }
+#charTooltip.visible { opacity: 1; }
+#charTooltip .tt-type { font-weight: 700; color: #4a7c59; margin-bottom: 2px; }
+#charTooltip .tt-detail { color: #333; }
 </style>
 </head>
 <body>
@@ -213,7 +219,7 @@ function renderList(data, containerId) {
   container.innerHTML = data.map(item => `
     <div class="row">
       <div>
-        <span class="jp">${item.japanese}</span>
+        <span class="jp">${wrapChars(item.japanese)}</span>
         <button class="play-btn" onclick="speak('${item.japanese}')" title="Play pronunciation">&#9654;</button>
         <div class="reading">${item.reading}</div>
       </div>
@@ -263,7 +269,7 @@ function initFlashcard(dsName) {
     el.innerHTML = `<div class="flashcard-area">
       <div class="progress">Card ${idx + 1} of ${cards.length}</div>
       <div class="card" onclick="window._revealCard()">
-        <div class="jp">${c.japanese}</div>
+        <div class="jp">${wrapChars(c.japanese)}</div>
         <button class="play-btn" onclick="event.stopPropagation();speak('${c.japanese}')" title="Play pronunciation">&#9654;</button>
         ${revealed ? `<div class="reading">${c.reading}</div><div class="en">${c.english}</div>` : `<div style="margin-top:12px;color:#999">Tap card to reveal</div>`}
       </div>
@@ -301,7 +307,7 @@ function initQuiz(dsName) {
     el.innerHTML = `<div class="quiz-area">
       <div class="progress">Question ${idx + 1} of ${questions.length} &mdash; Score: ${score}</div>
       <div class="card" style="cursor:default">
-        <div class="jp">${q.japanese}</div>
+        <div class="jp">${wrapChars(q.japanese)}</div>
         <button class="play-btn" onclick="speak('${q.japanese}')" title="Play pronunciation">&#9654;</button>
       </div>
       ${options.map((o, i) => `<button class="quiz-option" onclick="window._answer(${i},'${o.english.replace(/'/g, "\\'")}')">${o.english}</button>`).join("")}
@@ -347,6 +353,262 @@ if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {};
   window.speechSynthesis.getVoices();
 }
+
+// ---- Character Tooltip System ----
+const hiraganaMap = {
+  "\u3042":"a","\u3044":"i","\u3046":"u","\u3048":"e","\u304A":"o",
+  "\u304B":"ka","\u304D":"ki","\u304F":"ku","\u3051":"ke","\u3053":"ko",
+  "\u3055":"sa","\u3057":"shi","\u3059":"su","\u305B":"se","\u305D":"so",
+  "\u305F":"ta","\u3061":"chi","\u3064":"tsu","\u3066":"te","\u3068":"to",
+  "\u306A":"na","\u306B":"ni","\u306C":"nu","\u306D":"ne","\u306E":"no",
+  "\u306F":"ha","\u3072":"hi","\u3075":"fu","\u3078":"he","\u307B":"ho",
+  "\u307E":"ma","\u307F":"mi","\u3080":"mu","\u3081":"me","\u3082":"mo",
+  "\u3084":"ya","\u3086":"yu","\u3088":"yo",
+  "\u3089":"ra","\u308A":"ri","\u308B":"ru","\u308C":"re","\u308D":"ro",
+  "\u308F":"wa","\u3092":"wo","\u3093":"n",
+  "\u304C":"ga","\u304E":"gi","\u3050":"gu","\u3052":"ge","\u3054":"go",
+  "\u3056":"za","\u3058":"ji","\u305A":"zu","\u305C":"ze","\u305E":"zo",
+  "\u3060":"da","\u3062":"dji","\u3065":"dzu","\u3067":"de","\u3069":"do",
+  "\u3070":"ba","\u3073":"bi","\u3076":"bu","\u3079":"be","\u307C":"bo",
+  "\u3071":"pa","\u3074":"pi","\u3077":"pu","\u307A":"pe","\u307D":"po",
+  "\u3063":"(tsu)","\u3083":"(ya)","\u3085":"(yu)","\u3087":"(yo)","\u3041":"(a)","\u3043":"(i)","\u3045":"(u)","\u3047":"(e)","\u3049":"(o)"
+};
+
+const katakanaMap = {
+  "\u30A2":"a","\u30A4":"i","\u30A6":"u","\u30A8":"e","\u30AA":"o",
+  "\u30AB":"ka","\u30AD":"ki","\u30AF":"ku","\u30B1":"ke","\u30B3":"ko",
+  "\u30B5":"sa","\u30B7":"shi","\u30B9":"su","\u30BB":"se","\u30BD":"so",
+  "\u30BF":"ta","\u30C1":"chi","\u30C4":"tsu","\u30C6":"te","\u30C8":"to",
+  "\u30CA":"na","\u30CB":"ni","\u30CC":"nu","\u30CD":"ne","\u30CE":"no",
+  "\u30CF":"ha","\u30D2":"hi","\u30D5":"fu","\u30D8":"he","\u30DB":"ho",
+  "\u30DE":"ma","\u30DF":"mi","\u30E0":"mu","\u30E1":"me","\u30E2":"mo",
+  "\u30E4":"ya","\u30E6":"yu","\u30E8":"yo",
+  "\u30E9":"ra","\u30EA":"ri","\u30EB":"ru","\u30EC":"re","\u30ED":"ro",
+  "\u30EF":"wa","\u30F2":"wo","\u30F3":"n",
+  "\u30AC":"ga","\u30AE":"gi","\u30B0":"gu","\u30B2":"ge","\u30B4":"go",
+  "\u30B6":"za","\u30B8":"ji","\u30BA":"zu","\u30BC":"ze","\u30BE":"zo",
+  "\u30C0":"da","\u30C2":"dji","\u30C5":"dzu","\u30C7":"de","\u30C9":"do",
+  "\u30D0":"ba","\u30D3":"bi","\u30D6":"bu","\u30D9":"be","\u30DC":"bo",
+  "\u30D1":"pa","\u30D4":"pi","\u30D7":"pu","\u30DA":"pe","\u30DD":"po",
+  "\u30C3":"(tsu)","\u30E3":"(ya)","\u30E5":"(yu)","\u30E7":"(yo)","\u30A1":"(a)","\u30A3":"(i)","\u30A5":"(u)","\u30A7":"(e)","\u30A9":"(o)",
+  "\u30FC":"(long vowel)"
+};
+
+// Kanji dictionary - built from all vocabulary in the app
+const kanjiDict = {};
+function kd(ch, meaning, reading) { kanjiDict[ch] = {meaning:meaning, reading:reading}; }
+kd("\u5BFF","longevity, celebration","kotobuki / ju");
+kd("\u53F8","manage, officer","tsukasa / shi");
+kd("\u523A","thorn, pierce","sa / shi");
+kd("\u8EAB","body","mi / shin");
+kd("\u5929","heaven, sky","ama / ten");
+kd("\u856A","buckwheat","soba");
+kd("\u5473","taste, flavor","aji / mi");
+kd("\u5653","miso","miso");
+kd("\u6C41","soup, juice","shiru / juu");
+kd("\u679D","branch","eda / shi");
+kd("\u8C46","bean","mame / tou");
+kd("\u990A","nurture","yashinau / you");
+kd("\u7126","char, burn","kogeru / shou");
+kd("\u713C","bake, grill","yaku / shou");
+kd("\u9CE5","bird","tori / chou");
+kd("\u597D","like, fond","suku / kou");
+kd("\u7389","ball, jewel","tama / gyoku");
+kd("\u5B50","child","ko / shi");
+kd("\u725B","cow, beef","ushi / gyuu");
+kd("\u4E3C","bowl","donburi / don");
+kd("\u89AA","parent","oya / shin");
+kd("\u5510","Tang, China","kara / tou");
+kd("\u63DA","raise, fry","ageru / you");
+kd("\u7D20","element, plain","moto / so");
+kd("\u3076","part (kana)","bu");
+kd("\u751F","life, raw","nama / sei");
+kd("\u65E5","day, sun","hi / nichi");
+kd("\u672C","book, origin","moto / hon");
+kd("\u9152","sake, alcohol","sake / shu");
+kd("\u9154","drunk","you / sui");
+kd("\u5F37","strong","tsuyoi / kyou");
+kd("\u68B6","rudder","kaji");
+kd("\u7DD1","green","midori / ryoku");
+kd("\u8336","tea","cha / sa");
+kd("\u629C","pull out","nuku / batsu");
+kd("\u6C34","water","mizu / sui");
+kd("\u98EF","cooked rice","meshi / han");
+kd("\u5B9A","fix, settle","sadameru / tei");
+kd("\u98DF","eat, food","taberu / shoku");
+kd("\u5F01","valve, speech","ben");
+kd("\u5F53","hit, this","ataru / tou");
+kd("\u61D0","bosom, nostalgia","futokoro / kai");
+kd("\u77F3","stone, rock","ishi / seki");
+kd("\u6599","materials, fee","ryou");
+kd("\u7406","reason, logic","ri");
+kd("\u5C45","reside","iru / kyo");
+kd("\u4EFB","entrust","makaseru / nin");
+kd("\u9170","soy sauce","shou");
+kd("\u6CB9","oil","abura / yu");
+kd("\u5272","divide, split","waru / katsu");
+kd("\u7BB8","chopsticks","hashi");
+kd("\u4F1A","meet, society","au / kai");
+kd("\u8A08","measure, plan","hakaru / kei");
+kd("\u5EAD","garden, yard","niwa / tei");
+kd("\u5712","garden (park)","sono / en");
+kd("\u706F","lamp, light","hi / tou");
+kd("\u7C60","basket, cage","kago / rou");
+kd("\u67AF","wither, dry","kareru / ko");
+kd("\u5C71","mountain","yama / san");
+kd("\u6C34","water","mizu / sui");
+kd("\u6C60","pond","ike / chi");
+kd("\u9BC9","carp, koi","koi / ri");
+kd("\u6A4B","bridge","hashi / kyou");
+kd("\u592A","thick, big","futoi / tai");
+kd("\u9F13","drum","tsuzumi / ko");
+kd("\u624B","hand","te / shu");
+kd("\u9262","bowl, pot","hachi / hatsu");
+kd("\u8E72","crouch","tsukubau / son");
+kd("\u8E1E","step on","fumu / kyo");
+kd("\u9E7F","deer","shika / roku");
+kd("\u5A01","authority, threaten","odokasu / i");
+kd("\u7434","harp, lute","koto / kin");
+kd("\u7A9F","cave, grotto","iwaya / kutsu");
+kd("\u98DB","fly","tobu / hi");
+kd("\u5EF6","extend","nobiru / en");
+kd("\u6BB5","step, tier","dan");
+kd("\u5CA9","rock, cliff","iwa / gan");
+kd("\u7802","sand","suna / sa");
+kd("\u5229","profit, benefit","ri");
+kd("\u82D4","moss","koke / tai");
+kd("\u677E","pine","matsu / shou");
+kd("\u685C","cherry blossom","sakura / ou");
+kd("\u7D05","crimson, red","kurenai / kou");
+kd("\u8449","leaf","ha / you");
+kd("\u7AF9","bamboo","take / chiku");
+kd("\u57A3","fence, wall","kaki / en");
+kd("\u6839","root","ne / kon");
+kd("\u501F","borrow","kariru / shaku");
+kd("\u666F","scenery, view","kei");
+kd("\u6771","east","higashi / tou");
+kd("\u5C4B","roof, shop","ya / oku");
+kd("\u5BA4","room","muro / shitsu");
+kd("\u5CF6","island","shima / tou");
+kd("\u4E2D","middle, inside","naka / chuu");
+kd("\u6EDD","waterfall","taki / rou");
+kd("\u9063","send, dispatch","tsukau / ken");
+kd("\u7BC9","build","kizuku / chiku");
+kd("\u5E73","flat, peace","taira / hei");
+kd("\u9732","dew, expose","tsuyu / ro");
+kd("\u5730","ground, earth","chi / ji");
+kd("\u96EA","snow","yuki / setsu");
+kd("\u898B","see, view","miru / ken");
+kd("\u5403","hang, suspend","tsuru / chuu");
+kd("\u76C6","basin, tray","bon");
+kd("\u683D","planting","saibai / sai");
+kd("\u7D44","group, braid","kumi / so");
+kd("\u4E09","three","mi / san");
+kd("\u5C0A","revere, noble","toutoi / son");
+kd("\u5199","copy, photograph","utsusu / sha");
+kd("\u771F","true, real","ma / shin");
+kd("\u64AE","photograph","toru / satsu");
+kd("\u52A9","help","tasukeru / jo");
+kd("\u4E88","beforehand","yo");
+kd("\u7D04","promise, approx.","yaku");
+kd("\u4F7F","use","tsukau / shi");
+kd("\u82F1","excellent, English","ei");
+kd("\u8A9E","language, word","kataru / go");
+kd("\u8A71","talk, story","hanashi / wa");
+kd("\u4E00","one","hitotsu / ichi");
+kd("\u5EA6","degree, time","tabi / do");
+kd("\u9858","wish, request","negau / gan");
+kd("\u4F55","what","nani / ka");
+kd("\u6642","time, hour","toki / ji");
+kd("\u7F8E","beauty","utsukushii / bi");
+kd("\u99C5","station","eki");
+kd("\u8C9D","shellfish","kai");
+kd("\u5927","big, large","ookii / dai");
+kd("\u98F2","drink","nomu / in");
+kd("\u884C","go, conduct","iku / kou");
+kd("\u50CF","image, statue","zou");
+kd("\u6B21","next","tsugi / ji");
+kd("\u5165","enter","hairu / nyuu");
+kd("\u8CB7","buy","kau / bai");
+kd("\u547C","call, breathe","yobu / ko");
+kd("\u9298","inscription","mei");
+kd("\u5B50","child","ko / shi");
+kd("\u5B97","religion, sect","mune / shuu");
+kd("\u304A","(hiragana o)","o");
+kd("\u3059","(hiragana su)","su");
+kd("\u3059","(hiragana su)","su");
+kd("\u8584","thin","usui / haku");
+kd("\u3059","(hiragana su)","su");
+kd("\u697D","pleasure, music","tanoshii / gaku");
+kd("\u9E97","beautiful","uraraka / rei");
+kd("\u6587","writing, sentence","fumi / bun");
+kd("\u5316","change, transform","bakeru / ka");
+kd("\u5143","origin, base","moto / gen");
+kd("\u5168","all, whole","subete / zen");
+kd("\u90E8","section, part","bu");
+
+function classifyChar(ch) {
+  const c = ch.charCodeAt(0);
+  if (c >= 0x3040 && c <= 0x309F) return "hiragana";
+  if (c >= 0x30A0 && c <= 0x30FF) return "katakana";
+  if (c >= 0x4E00 && c <= 0x9FFF) return "kanji";
+  return "other";
+}
+
+function wrapChars(text) {
+  let html = "";
+  for (const ch of text) {
+    const type = classifyChar(ch);
+    if (type !== "other") {
+      html += '<span class="jp-char">' + ch + '</span>';
+    } else {
+      html += ch;
+    }
+  }
+  return html;
+}
+
+// Tooltip element
+const _ttDiv = document.createElement("div");
+_ttDiv.id = "charTooltip";
+document.body.appendChild(_ttDiv);
+
+function showCharTooltip(span) {
+  const ch = span.textContent;
+  const type = classifyChar(ch);
+  if (type === "other") return;
+  let label = type.charAt(0).toUpperCase() + type.slice(1);
+  let detail = "";
+  if (type === "hiragana" && hiraganaMap[ch]) {
+    detail = ch + ' = "' + hiraganaMap[ch] + '"';
+  } else if (type === "katakana" && katakanaMap[ch]) {
+    detail = ch + ' = "' + katakanaMap[ch] + '"';
+  } else if (type === "kanji" && kanjiDict[ch]) {
+    detail = ch + ' = "' + kanjiDict[ch].reading + '"<br>' + kanjiDict[ch].meaning;
+  } else if (type === "kanji") {
+    detail = ch + " (not in dictionary)";
+  }
+  _ttDiv.innerHTML = '<div class="tt-type">' + label + '</div><div class="tt-detail">' + detail + '</div>';
+  const rect = span.getBoundingClientRect();
+  _ttDiv.style.left = (window.scrollX + rect.left) + "px";
+  _ttDiv.style.top = (window.scrollY + rect.bottom + 6) + "px";
+  _ttDiv.classList.add("visible");
+}
+
+function hideCharTooltip() { _ttDiv.classList.remove("visible"); }
+
+document.addEventListener("mouseover", function(e) {
+  if (e.target.classList && e.target.classList.contains("jp-char")) showCharTooltip(e.target);
+});
+document.addEventListener("mouseout", function(e) {
+  if (e.target.classList && e.target.classList.contains("jp-char")) hideCharTooltip();
+});
+document.addEventListener("click", function(e) {
+  if (e.target.classList && e.target.classList.contains("jp-char")) {
+    if (_ttDiv.classList.contains("visible")) hideCharTooltip();
+    else showCharTooltip(e.target);
+  } else { hideCharTooltip(); }
+});
 </script>
 </body>
 </html>

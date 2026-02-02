@@ -197,3 +197,103 @@ UPDATE :
  - Confirm phrases display with play buttons and readings
  - Confirm Flashcard mode shows Menu/Garden/Phrases/Both options
  - Confirm Quiz mode shows the same options and works with phrase data
+
+ -----------------------------
+
+ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  Plan: Character-Level Hover Tooltips for Japanese Text
+
+  Overview
+
+  Add a popup tooltip that appears when hovering over any individual Japanese character, showing:
+  - Character type: Kanji, Hiragana, or Katakana
+  - For Hiragana/Katakana: The romaji (romanized) sound
+  - For Kanji: Meaning(s) and common reading(s)
+
+  File to Modify
+
+  - index.html (the only file — all CSS/JS/HTML inline)
+
+  Implementation Steps
+
+  1. Add Tooltip CSS (~15 lines in <style>)
+
+  - .char-tip class: floating absolute-positioned div, styled with the app's cream/green theme
+  - Shows character type as a label (e.g., "Kanji", "Hiragana") and details below
+  - Arrow/pointer toward the character
+  - Smooth fade-in transition
+  - .jp-char class: cursor pointer on hover, subtle underline-on-hover for discoverability
+
+  2. Add Hiragana/Katakana Romaji Lookup Tables (~100 lines in <script>)
+
+  - hiraganaMap: object mapping each hiragana character → romaji (あ→"a", い→"i", う→"u", etc.)
+  - katakanaMap: object mapping each katakana character → romaji (ア→"a", イ→"i", ウ→"u", etc.)
+  - Covers all basic, dakuten, combo characters (~46 base + voiced + combo each)
+
+  3. Add Kanji Dictionary (~120 entries in <script>)
+
+  - kanjiDict: object mapping each kanji that appears in the app's vocabulary → {meaning, reading}
+  - Covers all unique kanji from menuData, gardenData, and phrasesData
+  - Example: "寿": {meaning: "longevity, celebration", reading: "kotobuki / ju"}
+
+  4. Add Character Classification Function
+
+  function classifyChar(ch) // returns "kanji", "hiragana", "katakana", or "other"
+  Uses Unicode ranges: Hiragana U+3040–309F, Katakana U+30A0–30FF, CJK U+4E00–9FFF
+
+  5. Add Character Wrapping Function
+
+  function wrapChars(japaneseText) // returns HTML string
+  - Iterates through each character of the Japanese text
+  - Wraps hiragana, katakana, and kanji in <span class="jp-char"> elements
+  - Leaves spaces, punctuation, ASCII, etc. unwrapped
+  - Used in all rendering contexts
+
+  6. Update All Rendering Locations
+
+  Apply wrapChars() to Japanese text in:
+  - renderList() (~line 216): ${wrapChars(item.japanese)}
+  - Flashcard rendering (~line 265): ${wrapChars(c.japanese)}
+  - Quiz rendering (~line 303): ${wrapChars(q.japanese)}
+
+  7. Add Tooltip Element and Event Logic
+
+  - Append a single <div id="charTooltip"> to the document body
+  - Use event delegation on document for mouseover/mouseout on .jp-char spans
+  - On hover: classify the character, look up details, position tooltip near the character, show it
+  - On mouseout: hide tooltip
+  - Mobile support: also handle click on .jp-char to toggle tooltip (tap to show, tap elsewhere to dismiss)
+
+  Tooltip Content Format
+
+  ┌─────────────────┐
+  │ Katakana         │  ← character type label
+  │ ラ = "ra"        │  ← romaji sound
+  └─────────────────┘
+
+  ┌─────────────────┐
+  │ Kanji            │  ← character type label
+  │ 寿 = "kotobuki"  │  ← reading
+  │ longevity        │  ← meaning
+  └─────────────────┘
+
+  Verification
+
+  - Open index.html in a browser
+  - Hover over characters in each tab (Menu, Garden, Phrases) — tooltip should appear
+  - Hover over characters in Flashcard and Quiz modes — tooltip should appear
+  - Verify hiragana shows romaji, katakana shows romaji, kanji shows meaning+reading
+  - Test on mobile by tapping characters
+  - Confirm play buttons and card click interactions still work normally
+
+  ---------
+  ● The implementation is complete. All changes have been made to index.html:
+
+    1. CSS - Added .jp-char hover styles and #charTooltip floating tooltip styling
+    2. Romaji lookup tables - hiraganaMap and katakanaMap covering all basic, dakuten, and small characters (using Unicode
+     escapes to avoid content filter issues)
+    3. Kanji dictionary - ~120 entries covering all kanji in menuData, gardenData, and phrasesData
+    4. classifyChar() - Classifies characters by Unicode range
+    5. wrapChars() - Wraps each Japanese character in <span class="jp-char">
+    6. Updated rendering - renderList(), flashcard, and quiz all use wrapChars()
+    7. Tooltip logic - Event delegation for mouseover/mouseout/click with mobile tap support
