@@ -145,3 +145,55 @@ UPDATE :
  4. Audio play buttons work in flashcard mode
  5. Responsive layout on narrow viewport
 
+---------------
+ Here is Claude's plan:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+ Plan: Add Tourist Phrases Tab
+
+ Overview
+
+ Add a "Tourist Phrases" tab and data array to index.html, following the existing pattern for menu/garden tabs.
+
+ Changes (all in index.html)
+
+ 1. Add phrasesData array (~line 157, after gardenData)
+
+ Tourist phrases with japanese, reading, english fields. Include phrases like:
+ - お会計お願いします / okaikei onegai shimasu / The bill, please
+ - 生ビール大をお願いします / nama biiru dai o onegai shimasu / A big beer, please
+ - トイレはどこですか / toire wa doko desu ka / Where is the toilet?
+ - 駅はどちらですか / eki wa dochira desu ka / Which way to the train station?
+ - Plus ~15-20 more common tourist phrases (thank you, excuse me, how much, etc.)
+
+ 2. Add tab button (~line 53, after garden button)
+
+ <button class="tab-btn" data-tab="phrases">Tourist Phrases</button>
+
+ 3. Add tab content container (~line 58, after garden div)
+
+ <div id="phrases" class="list"></div>
+
+ 4. Update getDataset() function (~line 191)
+
+ Add: if (name === "phrases") return [...phrasesData];
+ Update "both" to return all three: [...menuData, ...gardenData, ...phrasesData]
+
+ 5. Update datasetSelector() (~line 199)
+
+ Add a "Phrases" button alongside Menu/Garden/Both.
+
+ 6. Add initialization call (~line 287)
+
+ renderList(phrasesData, "phrases");
+
+ 7. Create touristPhrases.json reference file
+
+ Following the pattern of menuItems.json / gardenFeatures.json.
+
+ Verification
+
+ - Open index.html in a browser
+ - Confirm "Tourist Phrases" tab appears between "Japanese Garden" and "Flashcard"
+ - Confirm phrases display with play buttons and readings
+ - Confirm Flashcard mode shows Menu/Garden/Phrases/Both options
+ - Confirm Quiz mode shows the same options and works with phrase data

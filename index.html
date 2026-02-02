@@ -50,11 +50,13 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 <div class="tabs">
   <button class="tab-btn active" data-tab="menu">Restaurant Menu</button>
   <button class="tab-btn" data-tab="garden">Japanese Garden</button>
+  <button class="tab-btn" data-tab="phrases">Tourist Phrases</button>
   <button class="tab-btn" data-tab="flashcard">Flashcard</button>
   <button class="tab-btn" data-tab="quiz">Quiz</button>
 </div>
 <div id="menu" class="list active"></div>
 <div id="garden" class="list"></div>
+<div id="phrases" class="list"></div>
 <div id="flashcard" class="list"></div>
 <div id="quiz" class="list"></div>
 
@@ -155,6 +157,34 @@ const gardenData = [
   { japanese: "三尊石", reading: "Sanzonseki", english: "Three-Buddha Stone Arrangement" }
 ];
 
+const phrasesData = [
+  { japanese: "ありがとうございます", reading: "Arigatou gozaimasu", english: "Thank you very much" },
+  { japanese: "すみません", reading: "Sumimasen", english: "Excuse me / I'm sorry" },
+  { japanese: "お会計お願いします", reading: "Okaikei onegai shimasu", english: "The bill, please" },
+  { japanese: "生ビール大をお願いします", reading: "Nama biiru dai o onegai shimasu", english: "A large draft beer, please" },
+  { japanese: "トイレはどこですか", reading: "Toire wa doko desu ka", english: "Where is the toilet?" },
+  { japanese: "駅はどちらですか", reading: "Eki wa dochira desu ka", english: "Which way to the train station?" },
+  { japanese: "いくらですか", reading: "Ikura desu ka", english: "How much is it?" },
+  { japanese: "これをください", reading: "Kore o kudasai", english: "This one, please" },
+  { japanese: "英語を話せますか", reading: "Eigo o hanasemasu ka", english: "Do you speak English?" },
+  { japanese: "わかりません", reading: "Wakarimasen", english: "I don't understand" },
+  { japanese: "もう一度お願いします", reading: "Mou ichido onegai shimasu", english: "One more time, please" },
+  { japanese: "助けてください", reading: "Tasukete kudasai", english: "Please help me" },
+  { japanese: "写真を撮ってもいいですか", reading: "Shashin o totte mo ii desu ka", english: "May I take a photo?" },
+  { japanese: "おすすめは何ですか", reading: "Osusume wa nan desu ka", english: "What do you recommend?" },
+  { japanese: "予約をしたいのですが", reading: "Yoyaku o shitai no desu ga", english: "I'd like to make a reservation" },
+  { japanese: "Wi-Fiはありますか", reading: "Waifai wa arimasu ka", english: "Is there Wi-Fi?" },
+  { japanese: "クレジットカードは使えますか", reading: "Kurejitto kaado wa tsukaemasu ka", english: "Can I use a credit card?" },
+  { japanese: "メニューをお願いします", reading: "Menyuu o onegai shimasu", english: "The menu, please" },
+  { japanese: "お水をお願いします", reading: "Omizu o onegai shimasu", english: "Water, please" },
+  { japanese: "ここはどこですか", reading: "Koko wa doko desu ka", english: "Where am I?" },
+  { japanese: "タクシーを呼んでください", reading: "Takushii o yonde kudasai", english: "Please call a taxi" },
+  { japanese: "チェックインお願いします", reading: "Chekkuin onegai shimasu", english: "Check-in, please" },
+  { japanese: "何時ですか", reading: "Nanji desu ka", english: "What time is it?" },
+  { japanese: "アレルギーがあります", reading: "Arerugii ga arimasu", english: "I have an allergy" },
+  { japanese: "美味しいです", reading: "Oishii desu", english: "It's delicious" }
+];
+
 function speak(text) {
   if (!window.speechSynthesis) { alert("Speech synthesis not supported in this browser."); return; }
   window.speechSynthesis.cancel();
@@ -189,7 +219,8 @@ function shuffle(arr) {
 function getDataset(name) {
   if (name === "menu") return [...menuData];
   if (name === "garden") return [...gardenData];
-  return [...menuData, ...gardenData];
+  if (name === "phrases") return [...phrasesData];
+  return [...menuData, ...gardenData, ...phrasesData];
 }
 
 const _startCallbacks = {};
@@ -199,7 +230,8 @@ function datasetSelector(containerId, onSelect) {
   el.innerHTML = `<div class="dataset-selector"><h2>Choose a dataset</h2>
     <button onclick="_startCallbacks['${containerId}']('menu')">Menu</button>
     <button onclick="_startCallbacks['${containerId}']('garden')">Garden</button>
-    <button onclick="_startCallbacks['${containerId}']('both')">Both</button></div>`;
+    <button onclick="_startCallbacks['${containerId}']('phrases')">Phrases</button>
+    <button onclick="_startCallbacks['${containerId}']('both')">All</button></div>`;
 }
 
 // ---- Flashcard ----
@@ -284,6 +316,7 @@ function initQuiz(dsName) {
 // Init
 renderList(menuData, "menu");
 renderList(gardenData, "garden");
+renderList(phrasesData, "phrases");
 datasetSelector("flashcard", initFlashcard);
 datasetSelector("quiz", initQuiz);
 
