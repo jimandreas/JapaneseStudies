@@ -40,6 +40,8 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 .quiz-option.incorrect { background: #c0392b; color: #fff; border-color: #c0392b; }
 .summary { max-width: 500px; margin: 30px auto; padding: 30px; background: #fff; border-radius: 12px; border: 2px solid #4a7c59; }
 .summary h2 { margin-bottom: 12px; color: #4a7c59; }
+.speed-control { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; font-size: 0.9rem; color: #555; }
+.speed-control input[type="range"] { width: 160px; accent-color: #4a7c59; }
 @media (max-width: 600px) {
   .row { grid-template-columns: 1fr; gap: 4px; }
 }
@@ -47,6 +49,11 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 </head>
 <body>
 <h1>Japanese Vocabulary Study</h1>
+<div class="speed-control">
+  <label for="speed-slider">Speech Speed:</label>
+  <input type="range" id="speed-slider" min="0.3" max="1.5" step="0.1" value="1.0">
+  <span id="speed-value">1.0x</span>
+</div>
 <div class="tabs">
   <button class="tab-btn active" data-tab="menu">Restaurant Menu</button>
   <button class="tab-btn" data-tab="garden">Japanese Garden</button>
@@ -61,6 +68,10 @@ h1 { text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
 <div id="quiz" class="list"></div>
 
 <script>
+const speedSlider = document.getElementById("speed-slider");
+const speedValue = document.getElementById("speed-value");
+speedSlider.addEventListener("input", () => { speedValue.textContent = parseFloat(speedSlider.value).toFixed(1) + "x"; });
+
 const menuData = [
   { japanese: "寿司", reading: "Sushi", english: "Sushi" },
   { japanese: "刺身", reading: "Sashimi", english: "Sashimi (Sliced raw fish)" },
@@ -190,6 +201,7 @@ function speak(text) {
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "ja-JP";
+  utter.rate = parseFloat(speedSlider.value);
   const voices = window.speechSynthesis.getVoices();
   const jaVoice = voices.find(v => v.lang.startsWith("ja"));
   if (jaVoice) utter.voice = jaVoice;
